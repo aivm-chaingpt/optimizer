@@ -1,4 +1,4 @@
-FROM rust:1.81.0-alpine AS targetarch
+FROM rust:1.84.1-alpine AS targetarch
 
 ARG BUILDPLATFORM
 ARG TARGETPLATFORM
@@ -53,7 +53,7 @@ ADD optimize.sh /usr/local/bin/optimize.sh
 RUN chmod +x /usr/local/bin/optimize.sh
 
 # Being required for gcc linking of bob
-RUN apk add --no-cache musl-dev
+RUN apk add --no-cache musl-dev protobuf-dev
 
 # Copy crate source
 ADD bob_the_builder bob_the_builder
@@ -74,14 +74,14 @@ RUN cd bob_the_builder && \
 #
 # rust-optimizer target
 #
-FROM rust:1.81.0-alpine AS rust-optimizer
+FROM rust:1.84.1-alpine AS rust-optimizer
 
 # Download the crates.io index using the new sparse protocol to improve performance
 ENV CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse
 
 # Being required for gcc linking
 RUN apk update && \
-  apk add --no-cache musl-dev
+  apk add --no-cache musl-dev protobuf-dev
 
 # Setup Rust with Wasm support
 RUN rustup target add wasm32-unknown-unknown
