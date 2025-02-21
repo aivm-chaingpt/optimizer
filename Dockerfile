@@ -81,10 +81,11 @@ ENV CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse
 
 # Being required for gcc linking
 RUN apk update && \
-  apk add --no-cache musl-dev protobuf-dev
+  apk add --no-cache musl-dev
 
 # Setup Rust with Wasm support
 RUN rustup target add wasm32-unknown-unknown
+RUN rustup component add rustfmt
 
 # Add bob and wasm-opt
 COPY --from=builder /usr/local/bin/bob /usr/local/bin
