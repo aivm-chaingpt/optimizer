@@ -1,8 +1,8 @@
 # Docker names (DN) for the images
-DN_OPTIMIZER := "cosmwasm/optimizer"
-DN_RUST_OPTIMIZER := "cosmwasm/rust-optimizer"
-DN_WORKSPACE_OPTIMIZER := "cosmwasm/workspace-optimizer"
-DOCKER_TAG := latest
+DN_OPTIMIZER := "aivm/optimizer"
+DN_RUST_OPTIMIZER := "aivm/rust-optimizer"
+DN_WORKSPACE_OPTIMIZER := "aivm/workspace-optimizer"
+DOCKER_TAG := 0.16.2
 
 # Native arch
 BUILDARCH := $(shell uname -m)
