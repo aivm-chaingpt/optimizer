@@ -29,7 +29,7 @@ jobs:
         id: aws-creds
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          role-to-assume: arn:aws:iam::$AWS_ACC_ID:role/chaingpt_github_oidc_role
+          role-to-assume: arn:aws:iam::205930620613:role/chaingpt_github_oidc_role
           aws-region: us-east-1
           role-session-name: chaingpt_github_oidc_role
       - name: Build - Git Checkout
