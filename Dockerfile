@@ -1,106 +1,102 @@
+FROM rust:1.85.0-alpine AS targetarch
 
-FROM alpine:latest
-CMD echo "Hello, World!"
+ARG BUILDPLATFORM
+ARG TARGETPLATFORM
+ARG TARGETARCH
 
-# FROM rust:1.85.0-alpine AS targetarch
+ARG BINARYEN_VERSION="version_116"
 
-# ARG BUILDPLATFORM
-# ARG TARGETPLATFORM
-# ARG TARGETARCH
+RUN echo "Running on $BUILDPLATFORM, building for $TARGETPLATFORM"
 
-# ARG BINARYEN_VERSION="version_116"
+# AMD64
+FROM targetarch AS builder-amd64
+ARG ARCH="x86_64"
 
-# RUN echo "Running on $BUILDPLATFORM, building for $TARGETPLATFORM"
+# ARM64
+FROM targetarch AS builder-arm64
+ARG ARCH="aarch64"
 
-# # AMD64
-# FROM targetarch AS builder-amd64
-# ARG ARCH="x86_64"
+# GENERIC
+# The builder image builds binaries like wasm-opt and bob.
+# After the build process, only the final binaries are copied into the *-optimizer
+# images to avoid shipping all the source code and intermediate build results to the user.
+FROM builder-${TARGETARCH} AS builder
 
-# # ARM64
-# FROM targetarch AS builder-arm64
-# ARG ARCH="aarch64"
+# Download binaryen sources
+ADD https://github.com/WebAssembly/binaryen/archive/refs/tags/$BINARYEN_VERSION.tar.gz /tmp/binaryen.tar.gz
 
-# # GENERIC
-# # The builder image builds binaries like wasm-opt and bob.
-# # After the build process, only the final binaries are copied into the *-optimizer
-# # images to avoid shipping all the source code and intermediate build results to the user.
-# FROM builder-${TARGETARCH} AS builder
+# Extract and compile wasm-opt
+# Adapted from https://github.com/WebAssembly/binaryen/blob/main/.github/workflows/build_release.yml
+RUN apk update && apk add build-base cmake git python3 clang ninja
+RUN tar -xf /tmp/binaryen.tar.gz
+RUN cd binaryen-version_*/ \
+  && git clone --depth 1 https://github.com/google/googletest.git ./third_party/googletest \
+  && cmake . -G Ninja -DCMAKE_CXX_FLAGS="-static" -DCMAKE_C_FLAGS="-static" -DCMAKE_BUILD_TYPE=Release -DBUILD_STATIC_LIB=ON \
+  && ninja wasm-opt
 
-# # Download binaryen sources
-# ADD https://github.com/WebAssembly/binaryen/archive/refs/tags/$BINARYEN_VERSION.tar.gz /tmp/binaryen.tar.gz
+# Run tests
+RUN cd binaryen-version_*/ && ninja wasm-as wasm-dis
+RUN cd binaryen-version_*/ && python3 check.py wasm-opt
 
-# # Extract and compile wasm-opt
-# # Adapted from https://github.com/WebAssembly/binaryen/blob/main/.github/workflows/build_release.yml
-# RUN apk update && apk add build-base cmake git python3 clang ninja
-# RUN tar -xf /tmp/binaryen.tar.gz
-# RUN cd binaryen-version_*/ \
-#   && git clone --depth 1 https://github.com/google/googletest.git ./third_party/googletest \
-#   && cmake . -G Ninja -DCMAKE_CXX_FLAGS="-static" -DCMAKE_C_FLAGS="-static" -DCMAKE_BUILD_TYPE=Release -DBUILD_STATIC_LIB=ON \
-#   && ninja wasm-opt
+# Install wasm-opt
+RUN strip binaryen-version_*/bin/wasm-opt
+RUN mv binaryen-version_*/bin/wasm-opt /usr/local/bin
 
-# # Run tests
-# RUN cd binaryen-version_*/ && ninja wasm-as wasm-dis
-# RUN cd binaryen-version_*/ && python3 check.py wasm-opt
+# Check cargo version
+RUN cargo --version
 
-# # Install wasm-opt
-# RUN strip binaryen-version_*/bin/wasm-opt
-# RUN mv binaryen-version_*/bin/wasm-opt /usr/local/bin
+# Check wasm-opt version
+RUN wasm-opt --version
 
-# # Check cargo version
-# RUN cargo --version
+# Add scripts
+ADD optimize.sh /usr/local/bin/optimize.sh
+RUN chmod +x /usr/local/bin/optimize.sh
 
-# # Check wasm-opt version
-# RUN wasm-opt --version
+# Being required for gcc linking of bob
+RUN apk add --no-cache musl-dev protobuf-dev
 
-# # Add scripts
-# ADD optimize.sh /usr/local/bin/optimize.sh
-# RUN chmod +x /usr/local/bin/optimize.sh
+# Copy crate source
+ADD bob_the_builder bob_the_builder
 
-# # Being required for gcc linking of bob
-# RUN apk add --no-cache musl-dev protobuf-dev
+# Download the crates.io index using the new sparse protocol to improve performance
+# and avoid OOM in the bob_the_builder build.
+ENV CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse
 
-# # Copy crate source
-# ADD bob_the_builder bob_the_builder
+# Build bob binary
+# Those RUSTFLAGS reduce binary size from 4MB to 600 KB
+RUN cd bob_the_builder && RUSTFLAGS='-C link-arg=-s' cargo build --release
+# Check bob binary
+RUN cd bob_the_builder && \
+  ls -lh target/release/bob && \
+  (ldd target/release/bob || true) && \
+  mv target/release/bob /usr/local/bin
 
-# # Download the crates.io index using the new sparse protocol to improve performance
-# # and avoid OOM in the bob_the_builder build.
-# ENV CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse
+#
+# rust-optimizer target
+#
+FROM rust:1.85.0-alpine AS rust-optimizer
 
-# # Build bob binary
-# # Those RUSTFLAGS reduce binary size from 4MB to 600 KB
-# RUN cd bob_the_builder && RUSTFLAGS='-C link-arg=-s' cargo build --release
-# # Check bob binary
-# RUN cd bob_the_builder && \
-#   ls -lh target/release/bob && \
-#   (ldd target/release/bob || true) && \
-#   mv target/release/bob /usr/local/bin
+# Download the crates.io index using the new sparse protocol to improve performance
+ENV CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse
 
-# #
-# # rust-optimizer target
-# #
-# FROM rust:1.85.0-alpine AS rust-optimizer
+# Being required for gcc linking
+RUN apk update && \
+  apk add --no-cache musl-dev
 
-# # Download the crates.io index using the new sparse protocol to improve performance
-# ENV CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse
+# Setup Rust with Wasm support
+RUN rustup target add wasm32-unknown-unknown
+RUN rustup component add rustfmt
 
-# # Being required for gcc linking
-# RUN apk update && \
-#   apk add --no-cache musl-dev
+# Add bob and wasm-opt
+COPY --from=builder /usr/local/bin/bob /usr/local/bin
+COPY --from=builder /usr/local/bin/wasm-opt /usr/local/bin
 
-# # Setup Rust with Wasm support
-# RUN rustup target add wasm32-unknown-unknown
-# RUN rustup component add rustfmt
+# Add script as entry point
+COPY --from=builder /usr/local/bin/optimize.sh /usr/local/bin
 
-# # Add bob and wasm-opt
-# COPY --from=builder /usr/local/bin/bob /usr/local/bin
-# COPY --from=builder /usr/local/bin/wasm-opt /usr/local/bin
+# Assume we mount the source code in /code
+WORKDIR /code
 
-# # Add script as entry point
-# COPY --from=builder /usr/local/bin/optimize.sh /usr/local/bin
-
-# # Assume we mount the source code in /code
-# WORKDIR /code
-
-# ENTRYPOINT ["optimize.sh"]
-# # Default argument when none is provided
-# CMD ["."]
+ENTRYPOINT ["optimize.sh"]
+# Default argument when none is provided
+CMD ["."]
