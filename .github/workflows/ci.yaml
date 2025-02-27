@@ -17,8 +17,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build_amd:    
-    name: Build Images - development
+  build_x86_64:    
+    name: Build Images - x86_64
     runs-on: ubuntu-20.04
     permissions:
       id-token: write
@@ -67,8 +67,8 @@ jobs:
           docker tag $REPOSITORY:$TAG $AWS_ACC_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPOSITORY:$TAG
           docker push $AWS_ACC_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPOSITORY:$TAG
 
-  build_arm:    
-    name: Build Images - development
+  build_arm64:    
+    name: Build Images - arm64
     runs-on: ubuntu-20.04
     permissions:
       id-token: write
