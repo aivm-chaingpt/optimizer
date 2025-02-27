@@ -17,10 +17,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build_images_development:
-    
+  build_images_development:    
     name: Build Images - development
-    env:
     runs-on: ubuntu-20.04
     permissions:
       id-token: write
