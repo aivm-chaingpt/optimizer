@@ -68,7 +68,7 @@ jobs:
           DOCKER_BUILDKIT: 1
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
-          docker buildx build --pull --platform linux/amd64 -t $REPOSITORY_OPTIMIZER:$TAG --target rust-optimizer --push .
+          docker buildx build --pull --platform linux/amd64 -t $REPOSITORY_OPTIMIZER:$TAG --target rust-optimizer .
           docker tag $REPOSITORY_OPTIMIZER:$TAG $ECR_REGISTRY/$REPOSITORY_OPTIMIZER:$TAG
           echo Pushing "$ECR_REGISTRY/$REPOSITORY_OPTIMIZER"
           docker push $ECR_REGISTRY/$REPOSITORY_OPTIMIZER:$TAG
@@ -130,7 +130,7 @@ jobs:
           DOCKER_BUILDKIT: 1
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
-          docker buildx build --pull --platform linux/arm64 -t $REPOSITORY_OPTIMIZER-arm64:$TAG --target rust-optimizer --push .
+          docker buildx build --pull --platform linux/arm64 -t $REPOSITORY_OPTIMIZER-arm64:$TAG --target rust-optimizer .
           docker tag $REPOSITORY_OPTIMIZER-arm64:$TAG $ECR_REGISTRY/$REPOSITORY_OPTIMIZER-arm64:$TAG
           echo Pushing "$ECR_REGISTRY/$REPOSITORY_OPTIMIZER-arm64"
           docker push $ECR_REGISTRY/$REPOSITORY_OPTIMIZER-arm64:$TAG
