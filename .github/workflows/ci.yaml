@@ -68,49 +68,20 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Build Image aivm/optimizer
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./Dockerfile
-          push: false 
-          tags: aivm/optimizer:0.16.2
-          builder: multiarch
-          cache-from: type=registry,ref=205930620613.dkr.ecr.us-east-1.amazonaws.com/aivm/optimizer:cache
-          cache-to: type=registry,mode=max,image-manifest=true,oci-mediatypes=true,ref=205930620613.dkr.ecr.us-east-1.amazonaws.com/aivm/optimizer:cache
-
-      - name: Tag and Push optimizer
+      - name: Build - x86_64
+        id: build-image-base-image-x86-64
+        env:
+          DOCKER_BUILDKIT: 1
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
-          docker tag aivm/optimizer:0.16.2 205930620613.dkr.ecr.us-east-1.amazonaws.com/aivm/optimizer:0.16.2
-          docker push 205930620613.dkr.ecr.us-east-1.amazonaws.com/aivm/optimizer:0.16.2
-          docker tag aivm/optimizer:0.16.2 205930620613.dkr.ecr.us-east-1.amazonaws.com/aivm/optimizer:cache
-          docker push 205930620613.dkr.ecr.us-east-1.amazonaws.com/aivm/optimizer:cache
-
-      - name: Tag and Push rust-optimizer
-        run: |
-          docker tag aivm/optimizer:0.16.2 205930620613.dkr.ecr.us-east-1.amazonaws.com/aivm/rust-optimizer:0.16.2
-          docker push 205930620613.dkr.ecr.us-east-1.amazonaws.com/aivm/rust-optimizer:0.16.2
-
-      - name: Tag and Push workspace-optimizer
-        run: |
-          docker tag aivm/optimizer:0.16.2 205930620613.dkr.ecr.us-east-1.amazonaws.com/aivm/workspace-optimizer:0.16.2
-          docker push 205930620613.dkr.ecr.us-east-1.amazonaws.com/aivm/workspace-optimizer:0.16.2
-
-
-      # - name: Build - x86_64
-      #   id: build-image-base-image-x86-64
-      #   env:
-      #     DOCKER_BUILDKIT: 1
-      #     ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-      #   run: |
-      #     docker buildx build --pull --platform linux/amd64 -t $ECR_REGISTRY/$REPOSITORY_OPTIMIZER:$TAG --target rust-optimizer --cache-from=type=registry,ref=$ECR_REGISTRY/$REPOSITORY_OPTIMIZER:$TAG --load  .
-      #     docker push $ECR_REGISTRY/$REPOSITORY_OPTIMIZER:$TAG
-      #     echo Tagging and Pushing Image: "$ECR_REGISTRY/$REPOSITORY_RUST_OPTIMIZER"
-      #     docker tag $ECR_REGISTRY/$REPOSITORY_OPTIMIZER:$TAG $ECR_REGISTRY/$REPOSITORY_RUST_OPTIMIZER:$TAG
-      #     docker push $ECR_REGISTRY/$REPOSITORY_RUST_OPTIMIZER:$TAG
-      #     echo Tagging and Pushing Image: "$ECR_REGISTRY/$REPOSITORY_WORKSPACE_OPTIMIZER"
-      #     docker tag $ECR_REGISTRY/$REPOSITORY_OPTIMIZER:$TAG $ECR_REGISTRY/$REPOSITORY_WORKSPACE_OPTIMIZER:$TAG
-      #     docker push $ECR_REGISTRY/$REPOSITORY_WORKSPACE_OPTIMIZER:$TAG
+          docker buildx build --pull --platform linux/amd64 -t $ECR_REGISTRY/$REPOSITORY_OPTIMIZER:$TAG --target rust-optimizer --cache-from=type=registry,ref=$ECR_REGISTRY/$REPOSITORY_OPTIMIZER:cache --cache-to=type=registry,mode=max,image-manifest=true,oci-mediatypes=true,ref=$ECR_REGISTRY/$REPOSITORY_OPTIMIZER:cache --load  .
+          docker push $ECR_REGISTRY/$REPOSITORY_OPTIMIZER:$TAG
+          echo Tagging and Pushing Image: "$ECR_REGISTRY/$REPOSITORY_RUST_OPTIMIZER"
+          docker tag $ECR_REGISTRY/$REPOSITORY_OPTIMIZER:$TAG $ECR_REGISTRY/$REPOSITORY_RUST_OPTIMIZER:$TAG
+          docker push $ECR_REGISTRY/$REPOSITORY_RUST_OPTIMIZER:$TAG
+          echo Tagging and Pushing Image: "$ECR_REGISTRY/$REPOSITORY_WORKSPACE_OPTIMIZER"
+          docker tag $ECR_REGISTRY/$REPOSITORY_OPTIMIZER:$TAG $ECR_REGISTRY/$REPOSITORY_WORKSPACE_OPTIMIZER:$TAG
+          docker push $ECR_REGISTRY/$REPOSITORY_WORKSPACE_OPTIMIZER:$TAG
 
   # build_arm64:    
   #   name: Build Images - arm64
