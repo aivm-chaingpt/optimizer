@@ -83,8 +83,6 @@ jobs:
           docker tag $ECR_REGISTRY/$REPOSITORY_OPTIMIZER:$TAG $ECR_REGISTRY/$REPOSITORY_WORKSPACE_OPTIMIZER:$TAG
           docker push $ECR_REGISTRY/$REPOSITORY_WORKSPACE_OPTIMIZER:$TAG
 
-
-
   # build_arm64:    
   #   name: Build Images - arm64
   #   runs-on: ubuntu-20.04
