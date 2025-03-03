@@ -67,27 +67,35 @@ jobs:
       - name: Build - Login to ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
-        
-      - name: Build and push
+
+      - name: Build Image aivm/optimizer
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./Dockerfile
-          push: true
-          tags: 205930620613.dkr.ecr.us-east-1.amazonaws.com/aivm/optimizer:0.16.2
+          push: false 
+          tags: aivm/optimizer:0.16.2
           builder: multiarch
           cache-from: type=registry,ref=205930620613.dkr.ecr.us-east-1.amazonaws.com/aivm/optimizer:cache
           cache-to: type=registry,mode=max,image-manifest=true,oci-mediatypes=true,ref=205930620613.dkr.ecr.us-east-1.amazonaws.com/aivm/optimizer:cache
 
+      - name: Tag and Push optimizer
+        run: |
+          docker tag aivm/optimizer:0.16.2 205930620613.dkr.ecr.us-east-1.amazonaws.com/aivm/optimizer:0.16.2
+          docker push 205930620613.dkr.ecr.us-east-1.amazonaws.com/aivm/optimizer:0.16.2
+          docker tag aivm/optimizer:0.16.2 205930620613.dkr.ecr.us-east-1.amazonaws.com/aivm/optimizer:cache
+          docker push 205930620613.dkr.ecr.us-east-1.amazonaws.com/aivm/optimizer:cache
+
       - name: Tag and Push rust-optimizer
         run: |
-          docker tag 205930620613.dkr.ecr.us-east-1.amazonaws.com/aivm/optimizer:0.16.2 205930620613.dkr.ecr.us-east-1.amazonaws.com/aivm/rust-optimizer:0.16.2
+          docker tag aivm/optimizer:0.16.2 205930620613.dkr.ecr.us-east-1.amazonaws.com/aivm/rust-optimizer:0.16.2
           docker push 205930620613.dkr.ecr.us-east-1.amazonaws.com/aivm/rust-optimizer:0.16.2
 
       - name: Tag and Push workspace-optimizer
         run: |
-          docker tag 205930620613.dkr.ecr.us-east-1.amazonaws.com/aivm/optimizer:0.16.2 205930620613.dkr.ecr.us-east-1.amazonaws.com/aivm/workspace-optimizer:0.16.2
+          docker tag aivm/optimizer:0.16.2 205930620613.dkr.ecr.us-east-1.amazonaws.com/aivm/workspace-optimizer:0.16.2
           docker push 205930620613.dkr.ecr.us-east-1.amazonaws.com/aivm/workspace-optimizer:0.16.2
+
 
       # - name: Build - x86_64
       #   id: build-image-base-image-x86-64
