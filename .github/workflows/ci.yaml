@@ -74,7 +74,7 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: 205930620613.dkr.ecr.us-east-1.amazonaws.com/aivm/optimizer:$TAG
+          tags: 205930620613.dkr.ecr.us-east-1.amazonaws.com/aivm/optimizer:0.16.2
           builder: multiarch
           cache-from: type=registry,ref=205930620613.dkr.ecr.us-east-1.amazonaws.com/aivm/optimizer:cache
           cache-to: type=registry,mode=max,image-manifest=true,oci-mediatypes=true,ref=205930620613.dkr.ecr.us-east-1.amazonaws.com/aivm/optimizer:cache
