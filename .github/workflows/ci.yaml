@@ -43,7 +43,6 @@ jobs:
         run: |
           docker buildx create --use --name multiarch --platform linux/amd64,linux/arm64
 
-      # Adicionando cache do Docker para melhorar performance
       - name: Setup Docker Cache
         id: docker-cache
         run: |
@@ -75,7 +74,7 @@ jobs:
           DOCKER_BUILDKIT: 1
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
-          docker buildx build --pull --platform linux/amd64 -t $ECR_REGISTRY/$REPOSITORY_OPTIMIZER:$TAG --target rust-optimizer --cache-from=type=registry,ref=$ECR_REGISTRY/$REPOSITORY_OPTIMIZER:latest --load  .
+          docker buildx build --pull --platform linux/amd64 -t $ECR_REGISTRY/$REPOSITORY_OPTIMIZER:$TAG --target rust-optimizer --cache-from=type=registry,ref=$ECR_REGISTRY/$REPOSITORY_OPTIMIZER:$TAG --load  .
           docker push $ECR_REGISTRY/$REPOSITORY_OPTIMIZER:$TAG
           echo Tagging and Pushing Image: "$ECR_REGISTRY/$REPOSITORY_RUST_OPTIMIZER"
           docker tag $ECR_REGISTRY/$REPOSITORY_OPTIMIZER:$TAG $ECR_REGISTRY/$REPOSITORY_RUST_OPTIMIZER:$TAG
@@ -142,7 +141,7 @@ jobs:
   #         DOCKER_BUILDKIT: 1
   #         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
   #       run: |
-  #         docker buildx build --pull --platform linux/arm64 -t $ECR_REGISTRY/$REPOSITORY_OPTIMIZER-arm64:$TAG --target rust-optimizer --cache-from=type=registry,ref=$ECR_REGISTRY/$REPOSITORY_OPTIMIZER-arm64:latest --load  .
+  #         docker buildx build --pull --platform linux/arm64 -t $ECR_REGISTRY/$REPOSITORY_OPTIMIZER-arm64:$TAG --target rust-optimizer --cache-from=type=registry,ref=$ECR_REGISTRY/$REPOSITORY_OPTIMIZER-arm64:$TAG --load  .
   #         docker push $ECR_REGISTRY/$REPOSITORY_OPTIMIZER-arm64:$TAG
   #         docker tag $ECR_REGISTRY/$REPOSITORY_OPTIMIZER-arm64:$TAG $ECR_REGISTRY/$REPOSITORY_RUST_OPTIMIZER-arm64:$TAG
   #         docker push $ECR_REGISTRY/$REPOSITORY_RUST_OPTIMIZER-arm64:$TAG
