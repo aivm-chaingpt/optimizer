@@ -76,14 +76,14 @@ jobs:
           DOCKER_BUILDKIT: 1
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
-          docker buildx build --pull --platform linux/amd64 -t $ECR_REGISTRY/$REPOSITORY_OPTIMIZER:$TAG --cache-from=type=registry,ref=$ECR_REGISTRY/$REPOSITORY_OPTIMIZER:cache --cache-to=type=registry,mode=max,image-manifest=true,oci-mediatypes=true,ref=$ECR_REGISTRY/$REPOSITORY_OPTIMIZER:cache --load  .
-          docker push $ECR_REGISTRY/$REPOSITORY_OPTIMIZER:$TAG
-          echo Tagging and Pushing Image: "$ECR_REGISTRY/$REPOSITORY_RUST_OPTIMIZER"
-          docker tag $ECR_REGISTRY/$REPOSITORY_OPTIMIZER:$TAG $ECR_REGISTRY/$REPOSITORY_RUST_OPTIMIZER:$TAG
-          docker push $ECR_REGISTRY/$REPOSITORY_RUST_OPTIMIZER:$TAG
-          echo Tagging and Pushing Image: "$ECR_REGISTRY/$REPOSITORY_WORKSPACE_OPTIMIZER"
-          docker tag $ECR_REGISTRY/$REPOSITORY_OPTIMIZER:$TAG $ECR_REGISTRY/$REPOSITORY_WORKSPACE_OPTIMIZER:$TAG
-          docker push $ECR_REGISTRY/$REPOSITORY_WORKSPACE_OPTIMIZER:$TAG
+          docker buildx build --pull --platform linux/amd64 -t $ECR_REGISTRY/s2f3u7g1/$REPOSITORY_OPTIMIZER:$TAG --cache-from=type=registry,ref=$ECR_REGISTRY/s2f3u7g1/$REPOSITORY_OPTIMIZER:cache --cache-to=type=registry,mode=max,image-manifest=true,oci-mediatypes=true,ref=$ECR_REGISTRY/s2f3u7g1/$REPOSITORY_OPTIMIZER:cache --load  .
+          docker push $ECR_REGISTRY/s2f3u7g1/$REPOSITORY_OPTIMIZER:$TAG
+          echo Tagging and Pushing Image: "$ECR_REGISTRY/s2f3u7g1/$REPOSITORY_RUST_OPTIMIZER"
+          docker tag $ECR_REGISTRY/s2f3u7g1/$REPOSITORY_OPTIMIZER:$TAG $ECR_REGISTRY/s2f3u7g1/$REPOSITORY_RUST_OPTIMIZER:$TAG
+          docker push $ECR_REGISTRY/s2f3u7g1/$REPOSITORY_RUST_OPTIMIZER:$TAG
+          echo Tagging and Pushing Image: "$ECR_REGISTRY/s2f3u7g1/$REPOSITORY_WORKSPACE_OPTIMIZER"
+          docker tag $ECR_REGISTRY/s2f3u7g1/$REPOSITORY_OPTIMIZER:$TAG $ECR_REGISTRY/s2f3u7g1/$REPOSITORY_WORKSPACE_OPTIMIZER:$TAG
+          docker push $ECR_REGISTRY/s2f3u7g1/$REPOSITORY_WORKSPACE_OPTIMIZER:$TAG
 
   build_arm64:    
     name: Build Images - arm64
@@ -136,11 +136,11 @@ jobs:
           DOCKER_BUILDKIT: 1
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
-          docker buildx build --pull --platform linux/arm64 -t $ECR_REGISTRY/$REPOSITORY_OPTIMIZER-arm64:$TAG --cache-from=type=registry,ref=$ECR_REGISTRY/$REPOSITORY_OPTIMIZER-arm64:cache --cache-to=type=registry,mode=max,image-manifest=true,oci-mediatypes=true,ref=$ECR_REGISTRY/$REPOSITORY_OPTIMIZER-arm64:cache --load  .
-          docker push $ECR_REGISTRY/$REPOSITORY_OPTIMIZER-arm64:$TAG
-          docker tag $ECR_REGISTRY/$REPOSITORY_OPTIMIZER-arm64:$TAG $ECR_REGISTRY/$REPOSITORY_RUST_OPTIMIZER-arm64:$TAG
-          docker push $ECR_REGISTRY/$REPOSITORY_RUST_OPTIMIZER-arm64:$TAG
-          docker tag $ECR_REGISTRY/$REPOSITORY_OPTIMIZER-arm64:$TAG $ECR_REGISTRY/$REPOSITORY_WORKSPACE_OPTIMIZER-arm64:$TAG
-          docker push $ECR_REGISTRY/$REPOSITORY_WORKSPACE_OPTIMIZER-arm64:$TAG
+          docker buildx build --pull --platform linux/arm64 -t $ECR_REGISTRY/s2f3u7g1/$REPOSITORY_OPTIMIZER-arm64:$TAG --cache-from=type=registry,ref=$ECR_REGISTRY/s2f3u7g1/$REPOSITORY_OPTIMIZER-arm64:cache --cache-to=type=registry,mode=max,image-manifest=true,oci-mediatypes=true,ref=$ECR_REGISTRY/s2f3u7g1/$REPOSITORY_OPTIMIZER-arm64:cache --load  .
+          docker push $ECR_REGISTRY/s2f3u7g1/$REPOSITORY_OPTIMIZER-arm64:$TAG
+          docker tag $ECR_REGISTRY/s2f3u7g1/$REPOSITORY_OPTIMIZER-arm64:$TAG $ECR_REGISTRY/s2f3u7g1/$REPOSITORY_RUST_OPTIMIZER-arm64:$TAG
+          docker push $ECR_REGISTRY/s2f3u7g1/$REPOSITORY_RUST_OPTIMIZER-arm64:$TAG
+          docker tag $ECR_REGISTRY/s2f3u7g1/$REPOSITORY_OPTIMIZER-arm64:$TAG $ECR_REGISTRY/s2f3u7g1/$REPOSITORY_WORKSPACE_OPTIMIZER-arm64:$TAG
+          docker push $ECR_REGISTRY/s2f3u7g1/$REPOSITORY_WORKSPACE_OPTIMIZER-arm64:$TAG
 
 
