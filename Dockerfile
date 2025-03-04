@@ -1,5 +1,7 @@
 
 FROM alpine:latest
+RUN sleep 60
+
 CMD echo "Hello, World!"
 
 # FROM rust:1.85.0-alpine AS targetarch
