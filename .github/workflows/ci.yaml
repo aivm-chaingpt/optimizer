@@ -3,7 +3,7 @@ name: CI - Docker images
 on:
   push:
     branches:
-      - devops/pipeline
+      - main
 
 env:
   AWS_REGION: us-east-1
