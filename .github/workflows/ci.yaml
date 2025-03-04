@@ -51,22 +51,24 @@ jobs:
           
       - name: Build - Get ECR Repository optimizer
         run: |
-          aws ecr describe-repositories --region $AWS_REGION --repository-names $REPOSITORY_OPTIMIZER > /dev/null 2>&1 || \
-            aws ecr create-repository --region $AWS_REGION  --repository-name $REPOSITORY_OPTIMIZER
+          aws ecr-public describe-repositories --region $AWS_REGION --repository-names $REPOSITORY_OPTIMIZER > /dev/null 2>&1 || \
+            aws ecr-public create-repository --region $AWS_REGION  --repository-name $REPOSITORY_OPTIMIZER
 
       - name: Build - Get ECR Repository rust optimizer
         run: |
-          aws ecr describe-repositories --region $AWS_REGION --repository-names $REPOSITORY_RUST_OPTIMIZER > /dev/null 2>&1 || \
-            aws ecr create-repository --region $AWS_REGION  --repository-name $REPOSITORY_RUST_OPTIMIZER
+          aws ecr-public describe-repositories --region $AWS_REGION --repository-names $REPOSITORY_RUST_OPTIMIZER > /dev/null 2>&1 || \
+            aws ecr-public create-repository --region $AWS_REGION  --repository-name $REPOSITORY_RUST_OPTIMIZER
 
       - name: Build - Get ECR Repository workspace optimizer
         run: |
-          aws ecr describe-repositories --region $AWS_REGION --repository-names $REPOSITORY_WORKSPACE_OPTIMIZER > /dev/null 2>&1 || \
-            aws ecr create-repository --region $AWS_REGION  --repository-name $REPOSITORY_WORKSPACE_OPTIMIZER
+          aws ecr-public describe-repositories --region $AWS_REGION --repository-names $REPOSITORY_WORKSPACE_OPTIMIZER > /dev/null 2>&1 || \
+            aws ecr-public create-repository --region $AWS_REGION  --repository-name $REPOSITORY_WORKSPACE_OPTIMIZER
             
       - name: Build - Login to ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
+        with:
+          registry-type: public
 
       - name: Build - x86_64
         id: build-image-base-image-x86-64
@@ -113,19 +115,21 @@ jobs:
           mkdir -p /tmp/.buildx-cache
       - name: Build - Get ECR Repository optimizer
         run: |
-          aws ecr describe-repositories --region $AWS_REGION --repository-names $REPOSITORY_OPTIMIZER-arm64 > /dev/null 2>&1 || \
-            aws ecr create-repository --region $AWS_REGION  --repository-name $REPOSITORY_OPTIMIZER-arm64
+          aws ecr-public describe-repositories --region $AWS_REGION --repository-names $REPOSITORY_OPTIMIZER-arm64 > /dev/null 2>&1 || \
+            aws ecr-public create-repository --region $AWS_REGION  --repository-name $REPOSITORY_OPTIMIZER-arm64
       - name: Build - Get ECR Repository rust optimizer
         run: |
-          aws ecr describe-repositories --region $AWS_REGION --repository-names $REPOSITORY_RUST_OPTIMIZER-arm64 > /dev/null 2>&1 || \
-            aws ecr create-repository --region $AWS_REGION  --repository-name $REPOSITORY_RUST_OPTIMIZER-arm64
+          aws ecr-public describe-repositories --region $AWS_REGION --repository-names $REPOSITORY_RUST_OPTIMIZER-arm64 > /dev/null 2>&1 || \
+            aws ecr-public create-repository --region $AWS_REGION  --repository-name $REPOSITORY_RUST_OPTIMIZER-arm64
       - name: Build - Get ECR Repository workspace optimizer
         run: |
-          aws ecr describe-repositories --region $AWS_REGION --repository-names $REPOSITORY_WORKSPACE_OPTIMIZER-arm64 > /dev/null 2>&1 || \
-            aws ecr create-repository --region $AWS_REGION  --repository-name $REPOSITORY_WORKSPACE_OPTIMIZER-arm64
+          aws ecr-public describe-repositories --region $AWS_REGION --repository-names $REPOSITORY_WORKSPACE_OPTIMIZER-arm64 > /dev/null 2>&1 || \
+            aws ecr-public create-repository --region $AWS_REGION  --repository-name $REPOSITORY_WORKSPACE_OPTIMIZER-arm64
       - name: Build - Login to ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
+        with:
+          registry-type: public
       - name: Build and Push - arm64
         id: build-image-base-image-arm64
         env:
