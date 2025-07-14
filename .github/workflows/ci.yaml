@@ -10,21 +10,21 @@ env:
   REPOSITORY_OPTIMIZER: aivm/optimizer
   REPOSITORY_RUST_OPTIMIZER: aivm/rust-optimizer
   REPOSITORY_WORKSPACE_OPTIMIZER: aivm/workspace-optimizer
-  TAG: 0.16.2
+  TAG: 0.16.3
 
 concurrency:
   group: build_images_development
   cancel-in-progress: true
 
 jobs:
-  build_x86_64:    
+  build_x86_64:
     name: Build Images - x86_64
     runs-on: ubuntu-20.04
     permissions:
       id-token: write
       contents: read
     environment: development
-    timeout-minutes: 30 
+    timeout-minutes: 30
     steps:
       - name: Configure AWS credentials using OIDC
         id: aws-creds
@@ -33,7 +33,7 @@ jobs:
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/chaingpt_github_oidc_role
           aws-region: us-east-1
           role-session-name: chaingpt_github_oidc_role
-          
+
       - name: Build - Git Checkout
         uses: actions/checkout@v2
         with:
@@ -48,7 +48,7 @@ jobs:
         run: |
           echo "Setting up Docker cache for layers"
           mkdir -p /tmp/.buildx-cache
-          
+
       - name: Build - Get ECR Repository optimizer
         run: |
           aws ecr-public describe-repositories --region $AWS_REGION --repository-names $REPOSITORY_OPTIMIZER > /dev/null 2>&1 || \
@@ -63,7 +63,7 @@ jobs:
         run: |
           aws ecr-public describe-repositories --region $AWS_REGION --repository-names $REPOSITORY_WORKSPACE_OPTIMIZER > /dev/null 2>&1 || \
             aws ecr-public create-repository --region $AWS_REGION  --repository-name $REPOSITORY_WORKSPACE_OPTIMIZER
-            
+
       - name: Build - Login to ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
@@ -85,7 +85,7 @@ jobs:
           docker tag $ECR_REGISTRY/${{ secrets.ECR_ACCOUNT_ID }}/$REPOSITORY_OPTIMIZER:$TAG $ECR_REGISTRY/${{ secrets.ECR_ACCOUNT_ID }}/$REPOSITORY_WORKSPACE_OPTIMIZER:$TAG
           docker push $ECR_REGISTRY/${{ secrets.ECR_ACCOUNT_ID }}/$REPOSITORY_WORKSPACE_OPTIMIZER:$TAG
 
-  build_arm64:    
+  build_arm64:
     name: Build Images - arm64
     runs-on: ubuntu-20.04
     permissions:
