@@ -19,7 +19,7 @@ concurrency:
 jobs:
   build_x86_64:
     name: Build Images - x86_64
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     permissions:
       id-token: write
       contents: read
@@ -87,7 +87,7 @@ jobs:
 
   build_arm64:
     name: Build Images - arm64
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     permissions:
       id-token: write
       contents: read
