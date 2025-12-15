@@ -6,6 +6,9 @@ command -v shellcheck >/dev/null && shellcheck "$0"
 
 export PATH="$PATH:/root/.cargo/bin"
 
+# Record start time
+START_TIME=$(date +%s)
+
 # Debug toolchain and default Rust version
 rustup toolchain list
 cargo --version
@@ -35,20 +38,40 @@ if [ "$#" -ne 1 ] || ! [ -d "$1" ]; then
 fi
 PROJECTDIR="$1"
 echo "Building project $(realpath "$PROJECTDIR") ..."
+BUILD_START=$(date +%s)
 (
   cd "$PROJECTDIR"
   /usr/local/bin/bob
 )
+BUILD_END=$(date +%s)
+BUILD_TIME=$((BUILD_END - BUILD_START))
+echo "Build completed in ${BUILD_TIME}s"
 
-echo "Optimizing artifacts ..."
+echo "Optimizing artifacts in parallel ..."
+OPT_START=$(date +%s)
+
+# Collect all wasm files
+WASM_FILES=""
+WASM_COUNT=0
 for WASM in /target/wasm32-unknown-unknown/release/*.wasm; do
-  [ -e "$WASM" ] || continue # https://superuser.com/a/519493
-
-  OUT_FILENAME=$(basename "$WASM")
-  echo "Optimizing $OUT_FILENAME ..."
-  # --signext-lowering is needed to support blockchains runnning CosmWasm < 1.3. It can be removed eventually
-  wasm-opt -Oz --signext-lowering "$WASM" -o "artifacts/$OUT_FILENAME"
+  [ -e "$WASM" ] || continue
+  WASM_FILES="$WASM_FILES $WASM"
+  WASM_COUNT=$((WASM_COUNT + 1))
 done
+
+if [ "$WASM_COUNT" -gt 0 ]; then
+  echo "Found $WASM_COUNT wasm file(s), optimizing with $(nproc) parallel jobs ..."
+  # --signext-lowering is needed to support blockchains running CosmWasm < 1.3. It can be removed eventually
+  echo "$WASM_FILES" | tr ' ' '\n' | xargs -P "$(nproc)" -I {} sh -c '
+    WASM="{}"
+    OUT_FILENAME=$(basename "$WASM")
+    echo "Optimizing $OUT_FILENAME ..."
+    wasm-opt -Oz --signext-lowering "$WASM" -o "artifacts/$OUT_FILENAME"
+  '
+fi
+OPT_END=$(date +%s)
+OPT_TIME=$((OPT_END - OPT_START))
+echo "Optimization completed in ${OPT_TIME}s"
 
 echo "Post-processing artifacts..."
 (
@@ -61,4 +84,6 @@ echo "Post-processing artifacts..."
   fi
 )
 
-echo "Done."
+END_TIME=$(date +%s)
+TOTAL_TIME=$((END_TIME - START_TIME))
+echo "Done. Total time: ${TOTAL_TIME}s (build: ${BUILD_TIME}s, optimization: ${OPT_TIME}s)"
