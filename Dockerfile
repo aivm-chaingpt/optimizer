@@ -79,9 +79,14 @@ FROM rust:1.81.0-alpine AS rust-optimizer
 # Download the crates.io index using the new sparse protocol to improve performance
 ENV CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse
 
-# Being required for gcc linking
+# Being required for gcc linking and sccache build
 RUN apk update && \
-  apk add --no-cache musl-dev
+  apk add --no-cache musl-dev openssl-dev openssl-libs-static pkgconfig
+
+# Install sccache for build caching (0.11.0 supports rustc 1.75+)
+RUN cargo install sccache@0.11.0 --locked
+ENV RUSTC_WRAPPER=/usr/local/cargo/bin/sccache
+ENV SCCACHE_DIR=/code/target/sccache
 
 # Setup Rust with Wasm support
 RUN rustup target add wasm32-unknown-unknown
