@@ -72,9 +72,9 @@ RUN cd bob_the_builder && \
   mv target/release/bob /usr/local/bin
 
 #
-# rust-optimizer target
+# rust-optimizer-base: Base image with sccache (slow to build, rarely changes)
 #
-FROM rust:1.81.0-alpine AS rust-optimizer
+FROM rust:1.81.0-alpine AS rust-optimizer-base
 
 # Download the crates.io index using the new sparse protocol to improve performance
 ENV CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse
@@ -86,11 +86,20 @@ RUN apk update && \
 # Install sccache for build caching (0.11.0 supports rustc 1.75+)
 RUN cargo install sccache@0.11.0 --locked
 ENV RUSTC_WRAPPER=/usr/local/cargo/bin/sccache
-ENV SCCACHE_DIR=/code/target/sccache
+ENV SCCACHE_DIR=/sccache
 
 # Setup Rust with Wasm support
 RUN rustup target add wasm32-unknown-unknown
 RUN rustup component add rustfmt
+
+# Prevent rustup from auto-installing toolchains at runtime
+# This avoids re-downloading when user's rust-toolchain.toml specifies different targets
+ENV RUSTUP_TOOLCHAIN=1.81.0
+
+#
+# rust-optimizer: Final image with all tools
+#
+FROM rust-optimizer-base AS rust-optimizer
 
 # Add bob and wasm-opt
 COPY --from=builder /usr/local/bin/bob /usr/local/bin
